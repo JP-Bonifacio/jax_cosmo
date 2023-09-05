@@ -281,3 +281,6 @@ class NumberCounts(container):
         pzs = self.params[0]
         ngals = np.array([pz.gals_per_steradian for pz in pzs])
         return 1.0 / ngals
+
+@register_pytree_node_class
+class PeculiarVelocity(container): 
