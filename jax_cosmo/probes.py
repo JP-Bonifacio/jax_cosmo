@@ -130,6 +130,9 @@ def nla_kernel(cosmo, pzs, bias, z, ell):
     ell_factor = np.sqrt((ell - 1) * (ell) * (ell + 1) * (ell + 2)) / (ell + 0.5) ** 2
     return constant_factor * ell_factor * radial_kernel
 
+@jit
+def peculiar_velocity_kernel():
+
 
 @register_pytree_node_class
 class WeakLensing(container):
@@ -284,3 +287,19 @@ class NumberCounts(container):
 
 @register_pytree_node_class
 class PeculiarVelocity(container): 
+    """
+    Class representing a peculiar velocity probe, with a bunch of bins
+
+    Parameters:
+    -----------
+    redshift_bins: list of redshfit distribution
+    """
+
+    def __init__():
+    
+    @property
+    def n_tracers():
+    
+    def kernel():
+    
+    def noise():
