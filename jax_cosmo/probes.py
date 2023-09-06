@@ -137,6 +137,14 @@ def peculiar_velocity_kernel(cosmo, pzs, z, ells):
     """
     # Retrieve comoving distance corresponding to z
     chi = bkgrd.radial_comoving_distance(cosmo, z2a(z))
+    dNdchi = 
+    
+    # Radial kernel
+    W = scale_factor*growth_rate*integral(dNdchi) #essas coisas dependem do chi)
+    
+    return W
+
+    
 
 
 @register_pytree_node_class
@@ -324,4 +332,13 @@ class PeculiarVelocity(container):
         pzs, m = self.parames[:2]
         kernel = peculiar_velocity_kernel(cosmology, pzs, z, ell)
         return kernel    
-    def noise():
+    def noise(self):
+        """
+        Return the noise power for all redshifts
+        """
+        # Extract parameters
+        pzs = self.params[0]
+        chi = bkgrd.radial_comoving_distance(cosmo, z2a(z))
+        sigma_rand = 300
+
+        return (scale_factor * H0 * chi)**2 + sigma_rand**2 
