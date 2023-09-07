@@ -131,7 +131,8 @@ def nla_kernel(cosmo, pzs, bias, z, ell):
     return constant_factor * ell_factor * radial_kernel
 
 @jit
-def peculiar_velocity_kernel(cosmo, pzs, z, ells):
+# FIXME: See what is missing and what we'll use as a distribution.
+# def peculiar_velocity_kernel(cosmo, pzs, z, ells):
     """
     Returns a peculiar velocity kernel
     """
@@ -140,7 +141,7 @@ def peculiar_velocity_kernel(cosmo, pzs, z, ells):
     dNdchi = 
     
     # Radial kernel
-    W = scale_factor*growth_rate*integral(dNdchi) #essas coisas dependem do chi)
+    W = bkgrd.a_of_chi(cosmo, chi)*bkgrd.growth_rate(cosmo, a)*(dNdchi) 
     
     return W
 
@@ -299,6 +300,7 @@ class NumberCounts(container):
         return 1.0 / ngals
 
 @register_pytree_node_class
+# FIXME: We have to confirm the arguments in __init__ and see if the noise is correct
 class PeculiarVelocity(container): 
     """
     Class representing a peculiar velocity probe, with a bunch of bins
@@ -341,4 +343,4 @@ class PeculiarVelocity(container):
         chi = bkgrd.radial_comoving_distance(cosmo, z2a(z))
         sigma_rand = 300
 
-        return (scale_factor * H0 * chi)**2 + sigma_rand**2 
+        return (bkgrd.a_of_chi(cosmo, chi)*const.H0*chi)**2 + sigma_rand**2 
