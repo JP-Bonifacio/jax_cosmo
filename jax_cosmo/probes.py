@@ -132,16 +132,17 @@ def nla_kernel(cosmo, pzs, bias, z, ell):
 
 @jit
 # FIXME: See what is missing and what we'll use as a distribution.
-# def peculiar_velocity_kernel(cosmo, pzs, z, ells):
+# FIXME: ell factor
+def peculiar_velocity_kernel(cosmo, pzs, z):
     """
     Returns a peculiar velocity kernel
     """
     # Retrieve comoving distance corresponding to z
     chi = bkgrd.radial_comoving_distance(cosmo, z2a(z))
-    dNdchi = 
+    dndz = np.stack([pz(z) for pz in pzs], axis=0) 
     
     # Radial kernel
-    W = bkgrd.a_of_chi(cosmo, chi)*bkgrd.growth_rate(cosmo, a)*(dNdchi) 
+    W = bkgrd.a_of_chi(cosmo, chi)*bkgrd.growth_rate(cosmo, a)*(dndz) 
     
     return W
 
@@ -300,7 +301,7 @@ class NumberCounts(container):
         return 1.0 / ngals
 
 @register_pytree_node_class
-# FIXME: We have to confirm the arguments in __init__ and see if the noise is correct
+# FIXME: We have to confirm the arguments in __init__ 
 class PeculiarVelocity(container): 
     """
     Class representing a peculiar velocity probe, with a bunch of bins
@@ -310,7 +311,7 @@ class PeculiarVelocity(container):
     redshift_bins: list of redshfit distribution
     """
 
-    def __init__(self, redshift_bins,):
+    def __init__(self, redshift_bins):
     
     @property
     def n_tracers(self):
@@ -321,7 +322,7 @@ class PeculiarVelocity(container):
         pzs = self.params[0]
         return len(pzs)
     
-    def kernel(self, cosmo, z, ell):
+    def kernel(self, cosmo, z):
         """
         Compute the radial kernel for all nz bins in this probe.
 
@@ -332,8 +333,9 @@ class PeculiarVelocity(container):
         z = np.atleast_1d(z)
         # Extract parameters 
         pzs, m = self.parames[:2]
-        kernel = peculiar_velocity_kernel(cosmology, pzs, z, ell)
-        return kernel    
+        kernel = peculiar_velocity_kernel(cosmo, pzs, z)
+        return kernel 
+    # FIXME: see if the noise its correct   
     def noise(self):
         """
         Return the noise power for all redshifts
