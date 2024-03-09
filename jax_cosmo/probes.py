@@ -148,23 +148,6 @@ def nla_kernel(cosmo, pzs, bias, z, ell):
     # Ell dependent factor
     ell_factor = np.sqrt((ell - 1) * (ell) * (ell + 1) * (ell + 2)) / (ell + 0.5) ** 2
     return constant_factor * ell_factor * radial_kernel
-
-@jit
-# FIXME: See what is missing and what we'll use as a distribution.
-# FIXME: ell factor
-def peculiar_velocity_kernel(cosmo, pzs, z):
-    """
-    Returns a peculiar velocity kernel
-    """
-    # Retrieve comoving distance corresponding to z
-    chi = bkgrd.radial_comoving_distance(cosmo, z2a(z))
-    dndz = np.stack([pz(z) for pz in pzs], axis=0) 
-    
-    # Radial kernel
-    W = bkgrd.a_of_chi(cosmo, chi)*bkgrd.growth_rate(cosmo, a)*(dndz) 
-    
-    return W
-
     
 
 
@@ -318,50 +301,3 @@ class NumberCounts(container):
         pzs = self.params[0]
         ngals = np.array([pz.gals_per_steradian for pz in pzs])
         return 1.0 / ngals
-
-@register_pytree_node_class
-# FIXME: We have to confirm the arguments in __init__ 
-class PeculiarVelocity(container): 
-    """
-    Class representing a peculiar velocity probe, with a bunch of bins
-
-    Parameters:
-    -----------
-    redshift_bins: list of redshfit distribution
-    """
-
-    def __init__(self, redshift_bins):
-    
-    @property
-    def n_tracers(self):
-        """
-        Returns the number of tracers for this probe (redshift bins)
-        """
-        # Extract parameters
-        pzs = self.params[0]
-        return len(pzs)
-    
-    def kernel(self, cosmo, z):
-        """
-        Compute the radial kernel for all nz bins in this probe.
-
-        Returns:
-        ---------
-        radial_kernel: shape (nbins, nz)
-        """
-        z = np.atleast_1d(z)
-        # Extract parameters 
-        pzs, m = self.parames[:2]
-        kernel = peculiar_velocity_kernel(cosmo, pzs, z)
-        return kernel 
-    # FIXME: see if the noise its correct   
-    def noise(self):
-        """
-        Return the noise power for all redshifts
-        """
-        # Extract parameters
-        pzs = self.params[0]
-        chi = bkgrd.radial_comoving_distance(cosmo, z2a(z))
-        sigma_rand = 300
-
-        return (bkgrd.a_of_chi(cosmo, chi)*const.H0*chi)**2 + sigma_rand**2 
