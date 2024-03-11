@@ -358,5 +358,5 @@ class PeculiarVelocity(container):
         # Extract parameters
         pzs = self.params[0]
         
-        return np.zeros(len(pzs))
+        return None
     
