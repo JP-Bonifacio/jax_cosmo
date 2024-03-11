@@ -99,22 +99,6 @@ def density_kernel(cosmo, pzs, bias, z, ell):
     ell_factor = 1.0
     return constant_factor * ell_factor * radial_kernel
 
-    """
-    Computes the velocity kernel
-    """
-    if any(isinstance(pz, rds.delta_nz) for pz in pzs):
-        raise NotImplementedError(
-            "Velocity kernel not properly implemented for delta redshift distributions"
-        )
-    # Stack the dndz of all redshift bins
-    dndz = np.stack([pz(z) for pz in pzs], axis=0)
-
-    radial_kernel = dndz * z2a(z) * bkgrd.H(cosmo, z2a(z)) * bkgrd.growth_rate(cosmo, z2a(z))
-    # Normalization
-    constant_factor = 1.0
-    # Ell dependent factor
-    ell_factor = 1.0
-    return constant_factor * ell_factor * radial_kernel
 
 @jit
 def nla_kernel(cosmo, pzs, bias, z, ell):
