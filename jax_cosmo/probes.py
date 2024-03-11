@@ -75,7 +75,6 @@ def weak_lensing_kernel(cosmo, pzs, z, ell):
     ell_factor = np.sqrt((ell - 1) * (ell) * (ell + 1) * (ell + 2)) / (ell + 0.5) ** 2
     return constant_factor * ell_factor * radial_kernel
 
-
 @jit
 def density_kernel(cosmo, pzs, bias, z, ell):
     """
@@ -100,8 +99,6 @@ def density_kernel(cosmo, pzs, bias, z, ell):
     ell_factor = 1.0
     return constant_factor * ell_factor * radial_kernel
 
-@jit
-def velocity_kernel(cosmo, pzs, z, ell):
     """
     Computes the velocity kernel
     """
@@ -118,7 +115,6 @@ def velocity_kernel(cosmo, pzs, z, ell):
     # Ell dependent factor
     ell_factor = 1.0
     return constant_factor * ell_factor * radial_kernel
-
 
 @jit
 def nla_kernel(cosmo, pzs, bias, z, ell):
@@ -148,7 +144,26 @@ def nla_kernel(cosmo, pzs, bias, z, ell):
     # Ell dependent factor
     ell_factor = np.sqrt((ell - 1) * (ell) * (ell + 1) * (ell + 2)) / (ell + 0.5) ** 2
     return constant_factor * ell_factor * radial_kernel
-    
+
+@jit
+def velocity_kernel(cosmo, pzs, z, ell):
+    """
+    Computes the velocity kernel
+    """
+    if any(isinstance(pz, rds.delta_nz) for pz in pzs):
+        raise NotImplementedError(
+            "Velocity kernel not properly implemented for delta redshift distributions"
+        )
+    # Stack the dndz of all redshift bins
+    dndz = np.stack([pz(z) for pz in pzs], axis=0)
+
+    radial_kernel = dndz * z2a(z) * bkgrd.H(cosmo, z2a(z)) * bkgrd.growth_rate(cosmo, z2a(z))
+    # Normalization
+    constant_factor = 1.0
+    # Ell dependent factor
+    ell_factor = 1.0
+    return constant_factor * ell_factor * radial_kernel
+
 
 
 @register_pytree_node_class
@@ -301,3 +316,63 @@ class NumberCounts(container):
         pzs = self.params[0]
         ngals = np.array([pz.gals_per_steradian for pz in pzs])
         return 1.0 / ngals
+
+
+@register_pytree_node_class
+class PeculiarVelocity(container):
+    """Class representing a peculiar velocity probe, with a bunch of bins
+    
+    Parameters:
+    -----------
+    redshift_bins: nzredshift distributions
+
+    Configuration:
+    --------------
+    
+    """
+
+    def __init__(self, redshift_bins, has_rsd=False, **kwargs):
+        super(PeculiarVelocity, self).__init__(
+            redshift_bins, has_rsd=has_rsd ,**kwargs
+        )
+
+    @property
+    def zmax(self):
+        """
+        Returns the maximum redsfhit probed by this probe
+        """
+        # Extract parameters
+        pzs = self.params[0]
+        return max([pz.zmax for pz in pzs])
+    
+    @property
+    def n_tracers(self):
+        """Return the number of tracers for this probe, i.e. redshift bins"""
+        # Extract parameters
+        pzs = self.params[0]
+        return len(pzs)
+    
+    def kernel(self, cosmo, z, ell):
+        """Compute the radial kernel for all nz bins in this probe.
+        
+        Returns:
+        --------
+        radial_kernel: shape (nbins, nz)
+        """
+        z = np.atleast_1d(z)
+        # Extract parameters
+        pzs = self.params[0]
+        # Retrieve velocity kernel 
+        kernel = velocity_kernel(cosmo, pzs, z, ell)
+        return kernel
+    
+    def noise(self):
+        """Returns the noise power for all redshifts
+        
+        return: shape [nbins]
+        """
+        # Extract parameters
+        pzs = self.params[0]
+        
+        return np.zeros(len(pzs))
+    
