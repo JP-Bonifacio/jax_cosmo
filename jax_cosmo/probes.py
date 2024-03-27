@@ -72,8 +72,9 @@ def weak_lensing_kernel(cosmo, pzs, z, ell):
     # Constant term
     constant_factor = 3.0 * const.H0**2 * cosmo.Omega_m / 2.0 / const.c
     # Ell dependent factor
-    ell_factor = np.sqrt((ell - 1) * (ell) * (ell + 1) * (ell + 2)) / (ell + 0.5) ** 2
+    ell_factor = np.sqrt((ell - 1) * (ell) * (ell + 1) * (ell + 2)) * (ell + 0.5) ** 2
     return constant_factor * ell_factor * radial_kernel
+
 
 @jit
 def density_kernel(cosmo, pzs, bias, z, ell):
@@ -143,11 +144,11 @@ def velocity_kernel(cosmo, pzs, z, ell):
 
     radial_kernel = dndz * z2a(z) * bkgrd.H(cosmo, z2a(z)) * bkgrd.growth_rate(cosmo, z2a(z))
     # Normalization
-    constant_factor = 1.0
+    constant_factor = 1.
     # Ell dependent factor
-    ell_factor = 1.0
+    ell_factor = (1.0  + ((ell+1)**2/(ell+0.5)**2))
+    #ell_factor = 1.0
     return constant_factor * ell_factor * radial_kernel
-
 
 
 @register_pytree_node_class
