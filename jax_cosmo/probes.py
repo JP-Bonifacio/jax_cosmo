@@ -75,7 +75,6 @@ def weak_lensing_kernel(cosmo, pzs, z, ell):
     ell_factor = np.sqrt((ell - 1) * (ell) * (ell + 1) * (ell + 2)) * (ell + 0.5) ** 2
     return constant_factor * ell_factor * radial_kernel
 
-
 @jit
 def density_kernel(cosmo, pzs, bias, z, ell):
     """
@@ -99,7 +98,6 @@ def density_kernel(cosmo, pzs, bias, z, ell):
     # Ell dependent factor
     ell_factor = 1.0
     return constant_factor * ell_factor * radial_kernel
-
 
 @jit
 def nla_kernel(cosmo, pzs, bias, z, ell):
