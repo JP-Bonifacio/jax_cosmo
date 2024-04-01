@@ -197,3 +197,14 @@ def gaussian_cl_covariance_and_mean(
     cov_mat = gaussian_cl_covariance(ell, probes, cl_signal, cl_noise, f_sky, sparse)
 
     return cl_signal.flatten(), cov_mat
+
+def angular_cl_non_limber():
+    def cl():
+        def integrand():
+            
+            return 
+        
+        return 
+    
+    return cl()
+    
