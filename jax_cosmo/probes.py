@@ -137,7 +137,7 @@ def velocity_kernel(cosmo, pzs, z, ell):
         raise NotImplementedError(
             "Velocity kernel not properly implemented for delta redshift distributions"
         )
-    
+     
     # Stack the dndz of all redshift bins
     dndz = np.stack([pz(z) for pz in pzs], axis=0)
 
@@ -145,9 +145,9 @@ def velocity_kernel(cosmo, pzs, z, ell):
     # Normalization
     constant_factor = 1.
     # Ell dependent factor
-    #ell_factor = (1.0  + ((ell+1)**2/(ell+0.5)**2))
-    ell_factor = 1.0
-    return constant_factor * ell_factor * radial_kernel
+    ell_factor = (1.0  + ((ell+1)**2/(ell+0.5)**2))
+    #ell_factor = 1.0
+    return constant_factor * np.outer(ell_factor,radial_kernel)
 
 
 @register_pytree_node_class
